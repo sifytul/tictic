@@ -8,6 +8,9 @@ jobs:
     build:
         name: Build applicatoin
         runs-on: ubuntu-latest
+        env:
+            REGISTRY: docker.io
+            IMAGE_NAME: ${{github.repository}}
         steps:
         - name: Checkout Code
           uses: actions/checkout@v2
@@ -29,3 +32,12 @@ jobs:
           with:
             name: build-artifacts
             path: dist/
+        - name: Extract meta data
+          id: meta
+          uses: docker/metadata-action@v5
+          with:
+            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            tags: |
+              type=sha,format=long
+              type=ref,event=branch
+              latest
