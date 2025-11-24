@@ -7,7 +7,7 @@ on:
 jobs:
     build:
         name: Build applicatoin
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         env:
             REGISTRY: docker.io
             IMAGE_NAME: ${{github.repository}}
