@@ -13,8 +13,14 @@ jobs:
   check-runner:
     name: check-runner
     runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+
     outputs:
       available: ${{ steps.check.outputs.available }}
+
     steps:
       - id: check
         env:
@@ -22,9 +28,12 @@ jobs:
         run: |
           runners=$(curl -s \
             -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }}/actions/runners)
 
-          online=$(echo "$runners" | jq '[.runners[] | select(.status=="online")] | length')
+          online=$(echo "$runners" | jq '[.runners[]? | select(.status=="online")] | length')
+
+          echo "Online runners: $online"
 
           if [ "$online" -gt 0 ]; then
             echo "available=true" >> $GITHUB_OUTPUT
