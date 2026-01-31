@@ -24,13 +24,12 @@ jobs:
     steps:
       - id: check
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RUNNER_PAT }}
         run: |
           runners=$(curl -s \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }}/actions/runners)
-          echo "runners: $runners"
           online=$(echo "$runners" | jq '[.runners[]? | select(.status=="online")] | length')
 
           echo "Online runners: $online"
