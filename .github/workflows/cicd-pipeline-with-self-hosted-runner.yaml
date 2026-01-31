@@ -24,6 +24,13 @@ jobs:
           node-version: "22.17"
           cache: "yarn"
 
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install deps
+        run: yarn install
+
+
       - name: Install dependencies
         run: yarn
 
