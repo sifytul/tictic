@@ -86,7 +86,7 @@ jobs:
   docker:
     name: Docker build and push
     runs-on: self-hosted
-    timeout-minutes: 3
+    timeout-minutes: 15
     needs: [build]
     env:
       REGISTRY: docker.io
