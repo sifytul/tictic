@@ -10,41 +10,10 @@ on:
     branches: [main]
 
 jobs:
-  check-runner:
-    name: check-runner
-    runs-on: ubuntu-latest
-
-    permissions:
-      actions: read
-      contents: read
-
-    outputs:
-      available: ${{ steps.check.outputs.available }}
-
-    steps:
-      - id: check
-        env:
-          GH_TOKEN: ${{ secrets.RUNNER_PAT }}
-        run: |
-          runners=$(curl -s \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/actions/runners)
-          online=$(echo "$runners" | jq '[.runners[]? | select(.status=="online")] | length')
-          echo "runners: $runners"
-          echo "Online runners: $online"
-
-          if [ "$online" -gt 0 ]; then
-            echo "available=true" >> $GITHUB_OUTPUT
-          else
-            echo "available=false" >> $GITHUB_OUTPUT
-          fi
-
   test:
-    if: needs.check-runner.outputs.available == 'true'
-    needs: check-runner
     name: Unit Testing
     runs-on: self-hosted
+    timeout-minutes: 3
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -62,10 +31,9 @@ jobs:
         run: yarn test || echo 'No tests found'
 
   linting:
-    if: needs.check-runner.outputs.available == 'true'
-    needs: check-runner
     name: Linting
     runs-on: self-hosted
+    timeout-minutes: 3
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -83,10 +51,10 @@ jobs:
         run: yarn lint
 
   build:
-    if: needs.check-runner.outputs.available == 'true'
     name: Build applicatoin
     runs-on: self-hosted
-    needs: [check-runner, test, linting]
+    timeout-minutes: 3
+    needs: [test, linting]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -110,10 +78,10 @@ jobs:
           path: dist/
 
   docker:
-    if: needs.check-runner.outputs.available == 'true'
     name: Docker build and push
     runs-on: self-hosted
-    needs: [check-runner, build]
+    timeout-minutes: 3
+    needs: [build]
     env:
       REGISTRY: docker.io
       IMAGE_NAME: ${{ github.repository }}
