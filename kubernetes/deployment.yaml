@@ -18,7 +18,7 @@ spec:
       - name: tictic
         image: sifytul/tictic:sha-2552ca57871e744e496eb44486ca7dae0ad62a43
         ports:
-        - containerPort: 5173
+        - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -29,6 +29,6 @@ spec:
     app: tictic
   ports:
   - protocol: TCP
-    port: 5173
-    targetPort: 5173
+    port: 80
+    targetPort: 80
   type: ClusterIP
