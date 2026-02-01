@@ -28,6 +28,8 @@ jobs:
 
       - name: Run tests
         run: yarn test || echo 'No tests found'
+      - name: debugging
+        run: echo "ref => {{github.ref}}     event => ${{ github.event.name}}"
 
   linting:
     name: Linting
@@ -141,7 +143,9 @@ jobs:
 
       - name: Set image tag output
         id: set_output
-        run: echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+        run: | 
+          echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+          
   
   update-k8s:
     name: Update kubernetes deployments
@@ -176,4 +180,3 @@ jobs:
           git add kubernetes/deployment.yaml
           git commit -m "Update kubernetes deployment with new image tag: ${{needs.docker.outputs.image_tag}} [skip ci]" || echo "No changes to commit"
           git push
-          
