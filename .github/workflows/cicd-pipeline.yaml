@@ -171,7 +171,7 @@ jobs:
         env: 
           IMAGE_TAG: sha-${{ github.sha }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          REGISTRY: github.io
+          REGISTRY: sifytul
         run: |
           NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
 
