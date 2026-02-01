@@ -171,11 +171,10 @@ jobs:
         env: 
           IMAGE_TAG: sha-${{ github.sha }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          REGISTRY: sifytul
         run: |
-          NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
+          NEW_IMAGE="${GITHUB_REPOSITORY}:${IMAGE_TAG}"
 
-          sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
+          sed -i "s|image: ${GITHUB_REPOSITORY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
 
           echo "Updated deployment to use image: ${NEW_IMAGE}"
 
