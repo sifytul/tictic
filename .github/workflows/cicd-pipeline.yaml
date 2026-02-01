@@ -174,7 +174,7 @@ jobs:
         run: |
           NEW_IMAGE="${GITHUB_REPOSITORY}:${IMAGE_TAG}"
 
-          sed -i "s|image: ${GITHUB_REPOSITORY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
+          sed -i "s|image: ${GITHUB_REPOSITORY}.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
 
           echo "Updated deployment to use image: ${NEW_IMAGE}"
 
