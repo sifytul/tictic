@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - "kubernetes/deployments.yaml"
+      - "kubernetes/deployment.yaml"
   pull_request:
     branches: [main]
 
