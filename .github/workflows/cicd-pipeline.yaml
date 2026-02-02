@@ -5,9 +5,13 @@ on:
     branches:
       - main
     paths-ignore:
-      - "kubernetes/deployment.yaml"
+      - "kubernetes/**"
+
   pull_request:
-    branches: [main]
+    branches:
+      - main
+    paths-ignore:
+      - "kubernetes/**"
 
 permissions:
   contents: write
