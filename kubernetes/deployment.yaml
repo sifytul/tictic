@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: tictic
-        image: sifytul/tictic:sha-ddfbd1da1d44edff49ba70275e1097101a46a0a9
+        image: sifytul/tictic:sha-98a92cb661b81d3b2d898e1cf41e98d09b70faeb
         ports:
         - containerPort: 80
 ---
