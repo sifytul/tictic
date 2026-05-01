@@ -14,15 +14,17 @@ on:
       - "kubernetes/**"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
     name: Unit Testing
-    runs-on: ubuntu-latest # "self-hosted" for self hosted runner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -34,17 +36,19 @@ jobs:
         run: yarn
 
       - name: Run tests
-        run: yarn test || echo 'No tests found'
+        run: yarn test || true
+
       - name: debugging
         run: echo "ref => ${{ github.ref }} event => ${{ github.event_name }}"
 
-
   linting:
     name: Linting
-    runs-on: ubuntu-latest # "self-hosted" for self hosted runner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -59,12 +63,14 @@ jobs:
         run: yarn lint
 
   build:
-    name: Build applicatoin
-    runs-on: ubuntu-latest # "self-hosted" for self hosted runner
+    name: Build application
+    runs-on: ubuntu-latest
     needs: [test, linting]
+    permissions:
+      contents: read
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -84,10 +90,12 @@ jobs:
           name: build-artifacts
           path: dist/
 
-  docker:
-    name: Docker build and push
-    runs-on: ubuntu-latest # "self-hosted" for self hosted runner
+  docker-build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
     needs: [build]
+    permissions:
+      contents: read
     env:
       REGISTRY: docker.io
       IMAGE_NAME: ${{ github.repository }}
@@ -109,10 +117,10 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.Docker_USERNAME }}
-          password: ${{ secrets.Docker_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Extract meta data
+      - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -122,7 +130,7 @@ jobs:
             type=ref,event=branch
             latest
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -131,17 +139,72 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           load: true
 
+      - name: Set image tag output
+        run: |
+          echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+  docker-scan:
+    name: Scan Docker image
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    permissions:
+      contents: read
+    env:
+      REGISTRY: docker.io
+      IMAGE_NAME: ${{ github.repository }}
+
+    steps:
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.29.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{github.sha}}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
 
-      - name: Push docker image to Dockerhub
+  docker-push:
+    name: Push Docker image
+    runs-on: ubuntu-latest
+    needs: [docker-scan]
+    permissions:
+      contents: write
+    env:
+      REGISTRY: docker.io
+      IMAGE_NAME: ${{ github.repository }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            latest
+
+      - name: Push Docker image to registry
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -151,28 +214,29 @@ jobs:
 
       - name: Set image tag output
         id: set_output
-        run: | 
+        run: |
           echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
-          
-  
+
   update-k8s:
     name: Update kubernetes deployments
     runs-on: ubuntu-latest
-    needs: [docker]
+    needs: [docker-push]
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Setup Git Config
         run: |
-          git config user.name "GitHub Actions"
+          git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-      
+
       - name: Update kubernetes deployments file
-        env: 
+        env:
           IMAGE_TAG: sha-${{ github.sha }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
@@ -183,7 +247,7 @@ jobs:
           echo "Updated deployment to use image: ${NEW_IMAGE}"
 
           grep -A0 "image:" kubernetes/deployment.yaml
-      
+
       - name: Commit and push changes
         run: |
           git add kubernetes/deployment.yaml
@@ -195,4 +259,3 @@ jobs:
 
           git commit -m "Update deployment image [skip ci]"
           git push
-
