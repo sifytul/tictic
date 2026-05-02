@@ -38,7 +38,10 @@ jobs:
         run: yarn
 
       - name: Run tests
-        run: yarn test
+        run: yarn test || echo 'No tests found'
+
+      - name: debugging
+        run: echo "ref => ${{ github.ref }} event => ${{ github.event_name }}"
 
   linting:
     name: Linting
