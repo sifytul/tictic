@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: "22.12"
           cache: "yarn"
+          cache-dependency-path: app/yarn.lock
 
       - name: Install dependencies
         working-directory: app
@@ -60,6 +61,7 @@ jobs:
         with:
           node-version: "22.12"
           cache: "yarn"
+          cache-dependency-path: app/yarn.lock
 
       - name: Install dependencies
         working-directory: app
@@ -85,6 +87,7 @@ jobs:
         with:
           node-version: "22.12"
           cache: "yarn"
+          cache-dependency-path: app/yarn.lock
 
       - name: Install dependencies
         working-directory: app
