@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="src/assets/argocd.avif" alt="ArgoCD" height="80" />
-  <img src="src/assets/Kubernetes_logo.png" alt="Kubernetes" height="80" />
+  <img src="app/src/assets/argocd.avif" alt="ArgoCD" height="80" />
+  <img src="app/src/assets/Kubernetes_logo.png" alt="Kubernetes" height="80" />
 </p>
 
 <h1 align="center">Tictic</h1>
