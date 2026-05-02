@@ -6,7 +6,7 @@
 <h1 align="center">Tictic</h1>
 
 <p align="center">
-  A modern React application with enterprise-grade CI/CD and Kubernetes deployment
+  A modern React counter app with enterprise-grade CI/CD and Kubernetes deployment
 </p>
 
 <p align="center">
@@ -33,6 +33,10 @@ Tictic is a demonstration application showcasing modern DevOps practices with:
 ---
 
 ## Architecture
+
+<p align="center">
+  <img src="app/src/assets/cicd-diagram.png" alt="CICD Diagram" />
+</p>
 
 ```
 ┌─────────────┐     ┌───────────────┐     ┌─────────────┐
@@ -120,6 +124,8 @@ kubectl expose deployment tictic-deployment --type=NodePort --port=30090
 ### Setup
 
 ```bash
+cd app
+
 # Install dependencies
 yarn
 
@@ -147,16 +153,22 @@ tictic/
 │       └── cicd-pipeline.yaml    # CI/CD pipeline
 ├── kubernetes/
 │   └── deployment.yaml           # K8s deployment & service
-├── src/
-│   ├── assets/                   # Images and static assets
-│   ├── App.tsx                   # Main application component
-│   ├── App.css                   # Component styles
-│   ├── main.tsx                  # Application entry point
-│   └── index.css                 # Global styles
-├── Dockerfile                    # Multi-stage Docker build
-├── package.json                  # Dependencies
-├── vite.config.ts               # Vite configuration
-└── tsconfig.json                # TypeScript configuration
+├── app/
+│   ├── src/
+│   │   ├── assets/               # Images and static assets
+│   │   │   ├── argocd.avif
+│   │   │   ├── Kubernetes_logo.png
+│   │   │   └── react.svg
+│   │   ├── App.tsx               # Main application component
+│   │   ├── App.css               # Component styles
+│   │   ├── main.tsx              # Application entry point
+│   │   └── index.css             # Global styles
+│   ├── Dockerfile               # Multi-stage Docker build
+│   ├── package.json              # Dependencies
+│   ├── vite.config.ts           # Vite configuration
+│   └── tsconfig.json            # TypeScript configuration
+├── .gitignore
+└── README.md
 ```
 
 ---
