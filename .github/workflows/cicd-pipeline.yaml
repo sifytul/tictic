@@ -35,9 +35,11 @@ jobs:
           cache: "yarn"
 
       - name: Install dependencies
+        working-directory: app
         run: yarn
 
       - name: Run tests
+        working-directory: app
         run: yarn test || echo 'No tests found'
 
       - name: debugging
@@ -60,9 +62,11 @@ jobs:
           cache: "yarn"
 
       - name: Install dependencies
+        working-directory: app
         run: yarn
 
       - name: Run ESLint
+        working-directory: app
         run: yarn lint
 
   build:
@@ -83,9 +87,11 @@ jobs:
           cache: "yarn"
 
       - name: Install dependencies
+        working-directory: app
         run: yarn
 
       - name: Build the project
+        working-directory: app
         run: NODE_ENV=production yarn build
 
       - name: Upload build artifacts
@@ -139,7 +145,7 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./app
           push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -160,7 +166,7 @@ jobs:
       - name: Push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./app
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
